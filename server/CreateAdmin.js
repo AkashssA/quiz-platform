@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Admin = require('./models/Admin');
 
-mongoose.connect('mongodb://localhost:27017/quizApp', {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quizApp', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(async () => {

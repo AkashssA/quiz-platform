@@ -10,7 +10,7 @@ function verifyToken(req, res, next) {
   if (!token) return res.status(403).json({ message: 'No token provided' });
 
   try {
-    const decoded = jwt.verify(token, 'secretkey');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
     req.adminId = decoded.id;
     next();
   } catch (err) {
