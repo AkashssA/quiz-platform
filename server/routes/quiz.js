@@ -122,10 +122,37 @@ router.post('/submit/:pin', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Get submissions with optional pagination and username filter
 router.get('/responses/:pin', async (req, res) => {
-  const pin = req.params.pin;
-  const submissions = await Submission.find({ pin });
-  res.json(submissions);
+  try {
+    const pin = req.params.pin;
+    const { page = 1, limit = 20, username } = req.query;
+    const numericPage = Math.max(parseInt(page, 10) || 1, 1);
+    const numericLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+    const query = { pin };
+    if (username) {
+      query.username = new RegExp(username, 'i');
+    }
+
+    const [items, total] = await Promise.all([
+      Submission.find(query)
+        .sort({ submittedAt: -1 })
+        .skip((numericPage - 1) * numericLimit)
+        .limit(numericLimit),
+      Submission.countDocuments(query),
+    ]);
+
+    res.json({
+      items,
+      total,
+      page: numericPage,
+      limit: numericLimit,
+      pages: Math.ceil(total / numericLimit),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
